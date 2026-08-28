@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#111827">
+<title>Metal Mech Engineering | Bin Card Out Qty</title>
+<style>
+:root{--primary:#111827;--secondary:#374151;--muted:#6b7280;--border:#e5e7eb;--bg:#f5f7fa;--card:#ffffff;--soft:#f9fafb;--success:#166534;--success-bg:#f0fdf4;--danger:#b91c1c;--danger-bg:#fef2f2;}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;font-family:Inter,Segoe UI,Arial,sans-serif;background:var(--bg);color:#111827;}
+.page{width:100%;max-width:560px;margin:0 auto;padding:18px 14px 28px;}
+.card{background:var(--card);border:1px solid var(--border);border-radius:18px;overflow:hidden;box-shadow:0 8px 28px rgba(17,24,39,.08);}
+.top{background:var(--primary);color:white;padding:24px 22px 21px;}
+.brand{font-size:20px;font-weight:800;letter-spacing:.2px;}
+.subtitle{margin-top:5px;font-size:13px;color:#d1d5db;}
+.material{display:inline-flex;align-items:center;gap:7px;margin-top:16px;padding:7px 11px;border:1px solid rgba(255,255,255,.18);border-radius:999px;background:rgba(255,255,255,.08);font-size:12px;font-weight:700;letter-spacing:.5px;}
+.dot{width:7px;height:7px;border-radius:50%;background:#fff;}
+.content{padding:21px}
+.section-title{font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.7px;color:#374151;margin-bottom:12px;}
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.info{background:var(--soft);border:1px solid var(--border);border-radius:11px;padding:12px;min-height:67px;}
+.info.full{grid-column:1/-1}
+.label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.55px;margin-bottom:6px;}
+.value{font-size:14px;font-weight:700;line-height:1.3;word-break:break-word;}
+.divider{height:1px;background:var(--border);margin:21px 0;}
+.form{background:#fbfcfd;border:1px solid var(--border);border-radius:13px;padding:15px;}
+.field{margin-bottom:14px}
+.field label{display:block;margin-bottom:7px;font-size:12px;font-weight:800;color:#374151;}
+.required{color:#b91c1c}
+input{width:100%;height:47px;padding:0 13px;border:1px solid #d1d5db;border-radius:9px;background:#fff;color:#111827;font-size:15px;outline:none;}
+input:focus{border-color:#6b7280;box-shadow:0 0 0 3px rgba(17,24,39,.08);}
+button{width:100%;height:49px;margin-top:16px;border:0;border-radius:10px;background:var(--primary);color:white;font-size:14px;font-weight:800;letter-spacing:.35px;cursor:pointer;}
+button:disabled{opacity:.55;cursor:not-allowed}
+.message{display:none;margin-top:13px;padding:11px 12px;border-radius:9px;font-size:13px;font-weight:600;line-height:1.4;}
+.message.success{display:block;background:var(--success-bg);color:var(--success);border:1px solid #bbf7d0;}
+.message.error{display:block;background:var(--danger-bg);color:var(--danger);border:1px solid #fecaca;}
+.footer{text-align:center;margin-top:15px;font-size:11px;color:#9ca3af;}
+@media(max-width:390px){.page{padding:10px 9px 20px}.top{padding:20px 17px}.content{padding:17px}.info-grid{grid-template-columns:1fr}.info.full{grid-column:auto}}
+</style>
+</head>
+<body>
+<div class="page">
+<div class="card">
+<div class="top">
+<div class="brand">Metal Mech Engineering</div>
+<div class="subtitle">Material Traceability • Bin Card Control</div>
+<div class="material"><span class="dot"></span><span>BRASS</span></div>
+</div>
+<div class="content">
+<div class="section-title">Bin Card Information</div>
+<div class="info-grid">
+<div class="info"><div class="label">Travel Card No</div><div class="value">T-1226</div></div>
+<div class="info"><div class="label">Bin Card No</div><div class="value">STR-B702</div></div>
+<div class="info full"><div class="label">Item Name</div><div class="value">MM EX 313002U-00 INTERMEDIATE BODY</div></div>
+<div class="info"><div class="label">Bin Card Qty</div><div class="value">1310</div></div>
+<div class="info"><div class="label">Bin Card Balance Qty</div><div class="value" id="balanceQty">LOADING...</div></div>
+<div class="info"><div class="label">Work Order No</div><div class="value">Manual Entry</div></div>
+</div>
+<div class="divider"></div>
+<div class="section-title">Outward Transaction</div>
+<div class="form">
+<div class="field"><label for="workOrderNo">Work Order No <span class="required">*</span></label><input id="workOrderNo" type="text" placeholder="Enter Work Order No" autocomplete="off"></div>
+<div class="field"><label for="outQty">Out Quantity <span class="required">*</span></label><input id="outQty" type="number" min="0.0001" step="any" inputmode="decimal" placeholder="Enter quantity"></div>
+<div class="field"><label for="outDate">Out Date <span class="required">*</span></label><input id="outDate" type="date"></div>
+<button id="submitBtn" type="button" onclick="submitOutQty()">SUBMIT OUT QUANTITY</button>
+<div id="message" class="message"></div>
+</div>
+<div class="footer">Scan the correct Bin Card before submitting an outward quantity.</div>
+</div>
+</div>
+</div>
+<script>
+const API_URL='https://script.google.com/macros/s/AKfycbyQo8EOaBdRXKSt0NXjFkL6CuBXwaVPpxjSEiL82D5GyX__9Jse8rKOY_6L-u-VlTAz6w/exec';
+const BIN_CARD='STR-B702';
+const TRAVEL_CARD='T-1226';
+const ITEM_NAME='MM EX 313002U-00 INTERMEDIATE BODY';
+const BIN_QTY='1310';
+const MATERIAL='BRASS';
+function loadBinCardBalance(){
+const balanceBox=document.getElementById('balanceQty');
+if(!BIN_CARD||!TRAVEL_CARD){balanceBox.textContent='—';return;}
+fetch(API_URL+'?mode=GET_OUT_QTY&binCard='+encodeURIComponent(BIN_CARD)+'&travelCard='+encodeURIComponent(TRAVEL_CARD)+'&_='+Date.now())
+.then(function(response){return response.json();})
+.then(function(result){
+if(!result.success)throw new Error(result.message||'Unable to load balance');
+const rows=result.rows||[];
+let totalOut=0;
+rows.forEach(function(row){
+if(String(row.binCard||'').trim().toUpperCase()===BIN_CARD.trim().toUpperCase()&&String(row.travelCard||'').trim().toUpperCase()===TRAVEL_CARD.trim().toUpperCase()){
+totalOut+=Number(row.outQty)||0;
+}
+});
+const balance=Number(BIN_QTY||0)-totalOut;
+balanceBox.textContent=balance;
+})
+.catch(function(error){console.error(error);balanceBox.textContent='Unable to load';});
+}
+loadBinCardBalance();
+document.getElementById('outDate').value=new Date().toISOString().split('T')[0];
+function showMessage(text,type){const box=document.getElementById('message');box.textContent=text;box.className='message '+type;box.style.display='block';}
+function submitOutQty(){
+const wo=document.getElementById('workOrderNo').value.trim();
+const qty=parseFloat(document.getElementById('outQty').value);
+const date=document.getElementById('outDate').value;
+const btn=document.getElementById('submitBtn');
+if(!wo){showMessage('Please enter Work Order No.','error');return;}
+if(!qty||qty<=0){showMessage('Please enter a valid Out Quantity.','error');return;}
+if(!date){showMessage('Please select the Out Date.','error');return;}
+btn.disabled=true;btn.textContent='SUBMITTING...';
+const payload={syncMode:'OUT_QTY',material:MATERIAL,travelCard:TRAVEL_CARD,binCard:BIN_CARD,itemName:ITEM_NAME,binQty:BIN_QTY,workOrderNo:wo,outQty:qty,outDate:date};
+fetch(API_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(payload)})
+.then(r=>r.json())
+.then(x=>{if(!x.success)throw new Error(x.message||'Save failed');showMessage('OUT QTY SAVED SUCCESSFULLY | Balance: '+x.balanceQty,'success');document.getElementById('outQty').value='';btn.disabled=false;btn.textContent='SUBMIT OUT QUANTITY';})
+.catch(e=>{showMessage('ERROR: '+e.message,'error');btn.disabled=false;btn.textContent='SUBMIT OUT QUANTITY';});
+}
+</script>
+</body>
+</html>
