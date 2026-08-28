@@ -62,6 +62,23 @@ const TRAVEL_CARD='TS-528';
 const ITEM_NAME='MM EX A2F 25 SUB GLAND STAINLESS STEEL (S.S. 316)';
 const BIN_QTY='237';
 const MATERIAL='STAINLESS STEEL';
+function loadBinCardBalance(){
+const box=document.getElementById('balanceQty');
+fetch(API_URL+'?mode=GET_OUT_QTY&binCard='+encodeURIComponent(BIN_CARD)+'&travelCard='+encodeURIComponent(TRAVEL_CARD)+'&_='+Date.now())
+.then(function(r){return r.json();})
+.then(function(x){
+if(!x.success)throw new Error(x.message||'Balance load failed');
+let totalOut=0;
+(x.rows||[]).forEach(function(row){
+if(String(row.binCard||'').trim().toUpperCase()===BIN_CARD.trim().toUpperCase()&&String(row.travelCard||'').trim().toUpperCase()===TRAVEL_CARD.trim().toUpperCase()){
+totalOut+=Number(row.outQty)||0;
+}
+});
+box.textContent=Number(BIN_QTY||0)-totalOut;
+})
+.catch(function(e){console.error(e);box.textContent='Unable to load';});
+}
+loadBinCardBalance();
 document.getElementById('outDate').value=new Date().toISOString().split('T')[0];
 function showMessage(text,type){const box=document.getElementById('message');box.textContent=text;box.style.display='block';box.style.background=type==='success'?'#ecfdf5':'#fef2f2';box.style.color=type==='success'?'#166534':'#991b1b';}
 function submitOutQty(){
@@ -76,7 +93,7 @@ btn.disabled=true;btn.textContent='SUBMITTING...';
 const payload={syncMode:'OUT_QTY',material:MATERIAL,travelCard:TRAVEL_CARD,binCard:BIN_CARD,itemName:ITEM_NAME,binQty:BIN_QTY,workOrderNo:wo,outQty:qty,outDate:date};
 fetch(API_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(payload)})
 .then(r=>r.json())
-.then(x=>{if(!x.success)throw new Error(x.message||'Save failed');showMessage('OUT QTY SAVED SUCCESSFULLY | Balance: '+x.balanceQty,'success');document.getElementById('outQty').value='';btn.disabled=false;btn.textContent='SUBMIT OUT QUANTITY';})
+.then(x=>{if(!x.success)throw new Error(x.message||'Save failed');showMessage('OUT QTY SAVED SUCCESSFULLY | Balance: '+x.balanceQty,'success');document.getElementById('balanceQty').textContent=x.balanceQty;document.getElementById('outQty').value='';btn.disabled=false;btn.textContent='SUBMIT OUT QUANTITY';})
 .catch(e=>{showMessage('ERROR: '+e.message,'error');btn.disabled=false;btn.textContent='SUBMIT OUT QUANTITY';});
 }
 </script>
