@@ -65,20 +65,19 @@ const ITEM_NAME='MM EX A2F 25 SUB GLAND STAINLESS STEEL (S.S. 316)';
 const BIN_QTY='237';
 const MATERIAL='STAINLESS STEEL';
 function loadBinCardBalance(){
-const box=document.getElementById('balanceQty');
-fetch(API_URL+'?mode=GET_OUT_QTY&binCard='+encodeURIComponent(BIN_CARD)+'&travelCard='+encodeURIComponent(TRAVEL_CARD)+'&_='+Date.now())
+var box=document.getElementById('balanceQty');
+if(!box)return;
+var url=API_URL+'?mode=GET_BIN&travelCard='+encodeURIComponent(TRAVEL_CARD)+'&binCard='+encodeURIComponent(BIN_CARD)+'&_='+Date.now();
+fetch(url,{cache:'no-store'})
 .then(function(r){return r.json();})
 .then(function(x){
 if(!x.success)throw new Error(x.message||'Balance load failed');
-let totalOut=0;
-(x.rows||[]).forEach(function(row){
-if(String(row.binCard||'').trim().toUpperCase()===BIN_CARD.trim().toUpperCase()&&String(row.travelCard||'').trim().toUpperCase()===TRAVEL_CARD.trim().toUpperCase()){
-totalOut+=Number(row.outQty)||0;
-}
-});
-box.textContent=Number(BIN_QTY||0)-totalOut;
+box.textContent=x.balanceQty;
 })
-.catch(function(e){console.error(e);box.textContent='Unable to load';});
+.catch(function(e){
+console.error(e);
+box.textContent='Unable to load';
+});
 }
 loadBinCardBalance();
 document.getElementById('outDate').value=new Date().toISOString().split('T')[0];
